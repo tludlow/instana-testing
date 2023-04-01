@@ -1,0 +1,44 @@
+version: "3"
+services:
+  agent:
+    image: instana/agent:latest
+    pid: "host"
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev:/dev
+      - /sys:/sys
+      - /var/log:/var/log
+    # networks:
+    #   graphqlmesh:
+    #     aliases:
+    #       - instana-agent
+    environment:
+      - INSTANA_AGENT_ENDPOINT=ingress-coral-saas.instana.io
+      - INSTANA_AGENT_ENDPOINT_PORT=443
+      - INSTANA_AGENT_KEY=J8WrVA6DReCs_Vuu_u6GcA
+      - INSTANA_DOWNLOAD_KEY=undefined
+      # - INSTANA_AGENT_ZONE=${agent_zone:-graphql-demo}
+    expose:
+      - "42699"
+
+  # server-app:
+  #   build:
+  #     context: ./server-app
+  #   # networks:
+  #   #   graphqlmesh:
+  #   #     aliases:
+  #   #       - server-app
+  #   environment:
+  #     - INSTANA_AGENT_HOST=agent
+  #     - INSTANA_EUM_REPORTING_URL=${eum_reporting_url:-https://eum-us-west-2.instana.io}
+  #     - INSTANA_EUM_KEY=${eum_key}
+  #     - INSTANA_EUM_PAGE=${eum_page:-instana-graphql-demo-server/GraphiQL Playground}
+  #   expose:
+  #     - "3217"
+  #   ports:
+  #     - "3217:3217"
+  #   depends_on:
+  #     - agent
+# networks:
+#   graphqlmesh: {}
