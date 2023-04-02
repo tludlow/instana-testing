@@ -15,11 +15,11 @@ services:
         aliases:
           - instana-agent
     environment:
-      - INSTANA_AGENT_ENDPOINT=ingress-red-saas.instana.io
-      - INSTANA_AGENT_ENDPOINT_PORT=443
-      - INSTANA_AGENT_KEY=xxxxxxxxxxx
-      - INSTANA_DOWNLOAD_KEY=xxxxxxxxxxxx
-      - INSTANA_AGENT_ZONE=${agent_zone:-sdk-demo}
+      - INSTANA_AGENT_ENDPOINT=${INSTANA_AGENT_ENDPOINT}
+      - INSTANA_AGENT_ENDPOINT_PORT=${INSTANA_AGENT_ENDPOINT_PORT}
+      - INSTANA_AGENT_KEY=${INSTANA_AGENT_KEY}
+      - INSTANA_DOWNLOAD_KEY=${INSTANA_DOWNLOAD_KEY}
+      - INSTANA_AGENT_ZONE=${INSTANA_AGENT_ZONE}
     expose:
       - 42699
 

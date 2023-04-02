@@ -1,14 +1,8 @@
-import instana from "@instana/collector";
+import instana from "@tludlow-instana-fork/collector";
 instana({
   serviceName: "graphql-api-apollo",
-  level: "debug",
+  level: "info",
 });
-
-// import bunyan from "bunyan";
-// const logger = bunyan.createLogger({
-//   name: "graphql-api-apollo",
-//   level: "debug",
-// });
 
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -22,10 +16,8 @@ import { GraphQLError } from "graphql";
 import winston, { format } from "winston";
 
 const addTraceFormat = format((info, opts) => {
-  // if (opts.NODE_ENV === "test") {
   const span = instana.currentSpan();
   info.message = `(traceId: ${span.getTraceId()}) ${info.message}`;
-  // }
 
   return info;
 });
@@ -57,9 +49,9 @@ const typeDefs = `#graphql
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
-    books: [Book]
-    test: Boolean
-    other: Boolean
+    info(message: String!): Boolean
+    warn(message: String!): Boolean
+    error(message: String!): Boolean
   }
 `;
 
@@ -76,22 +68,17 @@ const books = [
 
 const resolvers = {
   Query: {
-    books: () => {
-      logger.info("Getting the books!");
-      return books;
+    info: (_: any, { message }: any) => {
+      logger.info(message);
+      return true;
     },
-    test: () => {
-      logger.info("info log next to error log");
-      logger.error("test query has general error");
-      throw new Error("General error");
+    warn: (_: any, { message }: any) => {
+      logger.warn(message);
+      throw new GraphQLError(message);
     },
-    other: () => {
-      // logger.warn("other query has graphql error");
-      logger.info("HOWDY HOWDY HOWDY HOWDY HOWDY");
-
-      throw new GraphQLError("Graphql error", {
-        extensions: {},
-      });
+    error: (_: any, { message }: any) => {
+      logger.error(message);
+      throw new Error(message);
     },
   },
 };

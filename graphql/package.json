@@ -14,7 +14,7 @@
   "dependencies": {
     "@apollo/server": "^4.5.0",
     "@faker-js/faker": "^7.6.0",
-    "@instana/collector": "^2.20.1",
+    "@tludlow-instana-fork/collector": "^3.0.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",

@@ -1,1 +1,1 @@
-declare module "@instana/collector";
+declare module "@tludlow-instana-fork/collector";
