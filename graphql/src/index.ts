@@ -1,7 +1,14 @@
 import instana from "@instana/collector";
 instana({
   serviceName: "graphql-api-apollo",
+  level: "debug",
 });
+
+// import bunyan from "bunyan";
+// const logger = bunyan.createLogger({
+//   name: "graphql-api-apollo",
+//   level: "debug",
+// });
 
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -16,11 +23,8 @@ import winston, { format } from "winston";
 
 const addTraceFormat = format((info, opts) => {
   // if (opts.NODE_ENV === "test") {
-  console.log(opts);
-  console.log(info);
   const span = instana.currentSpan();
   info.message = `(traceId: ${span.getTraceId()}) ${info.message}`;
-  console.log(info);
   // }
 
   return info;
@@ -34,6 +38,8 @@ export const logger = winston.createLogger({
   ],
   format: addTraceFormat(),
 });
+
+instana.setLogger(logger);
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -75,46 +81,54 @@ const resolvers = {
       return books;
     },
     test: () => {
+      logger.info("info log next to error log");
       logger.error("test query has general error");
       throw new Error("General error");
     },
     other: () => {
-      logger.warn("other query has graphql error");
+      // logger.warn("other query has graphql error");
+      logger.info("HOWDY HOWDY HOWDY HOWDY HOWDY");
 
-      throw new GraphQLError("Graphql error");
+      throw new GraphQLError("Graphql error", {
+        extensions: {},
+      });
     },
   },
 };
 
 interface MyContext {}
 
-const app = express();
-const httpServer = http.createServer(app);
+const startApp = async () => {
+  const app = express();
+  const httpServer = http.createServer(app);
 
-const server = new ApolloServer<MyContext>({
-  typeDefs,
-  resolvers,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-});
-// Ensure we wait for our server to start
-await server.start();
+  const server = new ApolloServer<MyContext>({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
+  // Ensure we wait for our server to start
+  await server.start();
 
-app.get("/error", (req, res) => {
-  res.status(500).json({ message: "testing this!!" });
-});
+  app.get("/error", (req, res) => {
+    res.status(500).json({ message: "testing this!!" });
+  });
 
-app.use(
-  "/",
-  cors<cors.CorsRequest>(),
-  bodyParser.json(),
-  // expressMiddleware accepts the same arguments:
-  // an Apollo Server instance and optional configuration options
-  expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token }),
-  })
-);
+  app.use(
+    "/",
+    cors<cors.CorsRequest>(),
+    bodyParser.json(),
+    // expressMiddleware accepts the same arguments:
+    // an Apollo Server instance and optional configuration options
+    expressMiddleware(server, {
+      context: async ({ req }) => ({ token: req.headers.token }),
+    })
+  );
 
-await new Promise<void>((resolve) =>
-  httpServer.listen({ port: 4000 }, resolve)
-);
-console.log(`🚀 Server ready at http://localhost:4000/`);
+  await new Promise<void>((resolve) =>
+    httpServer.listen({ port: 4000 }, resolve)
+  );
+  console.log(`🚀 Server ready at http://localhost:4000/`);
+};
+
+startApp();
