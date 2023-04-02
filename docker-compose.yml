@@ -45,6 +45,22 @@ services:
     depends_on:
       - agent
 
+  postgres:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpassword
+      - POSTGRES_DB=testdb
+    networks:
+      demomesh:
+        aliases:
+          - postgres
+
   # sender-app:
   #   build:
   #     context: ./sender-app
@@ -59,3 +75,6 @@ services:
 
 networks:
   demomesh: {}
+
+volumes:
+  db_data:

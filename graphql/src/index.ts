@@ -1,8 +1,13 @@
 import instana from "@tludlow-instana-fork/collector";
 instana({
   serviceName: "graphql-api-apollo",
-  level: "info",
+  level: "warn",
 });
+
+import dotenv from "dotenv";
+dotenv.config();
+
+console.log(process.env);
 
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -14,6 +19,7 @@ import bodyParser from "body-parser";
 import { GraphQLError } from "graphql";
 
 import winston, { format } from "winston";
+import { db } from "./lib/db";
 
 const addTraceFormat = format((info, opts) => {
   const span = instana.currentSpan();
@@ -33,38 +39,26 @@ export const logger = winston.createLogger({
 
 instana.setLogger(logger);
 
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
 const typeDefs = `#graphql
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-
-  # This "Book" type defines the queryable fields for every book in our data source.
-  type Book {
-    title: String
-    author: String
+  type Country {
+    id: ID!
+    name: String!
   }
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
+  type City {
+    id: ID!
+    name: String
+    country: Country!
+  }
+
   type Query {
     info(message: String!): Boolean
     warn(message: String!): Boolean
     error(message: String!): Boolean
+
+    cities: [City!]!
   }
 `;
-
-const books = [
-  {
-    title: "The Awakening",
-    author: "Kate Chopin",
-  },
-  {
-    title: "City of Glass",
-    author: "Paul Auster",
-  },
-];
 
 const resolvers = {
   Query: {
@@ -79,6 +73,18 @@ const resolvers = {
     error: (_: any, { message }: any) => {
       logger.error(message);
       throw new Error(message);
+    },
+    cities: async () => {
+      logger.info("Getting all the cities with the countries");
+      const citiesWithCountries = await db.cities.findMany({
+        include: {
+          country: true,
+        },
+      });
+
+      logger.info(citiesWithCountries);
+
+      return citiesWithCountries;
     },
   },
 };
