@@ -17,8 +17,8 @@ services:
     environment:
       - INSTANA_AGENT_ENDPOINT=ingress-red-saas.instana.io
       - INSTANA_AGENT_ENDPOINT_PORT=443
-      - INSTANA_AGENT_KEY=J8WrVA6DReCs_Vuu_u6GcA
-      - INSTANA_DOWNLOAD_KEY=J8WrVA6DReCs_Vuu_u6GcA
+      - INSTANA_AGENT_KEY=xxxxxxxxxxx
+      - INSTANA_DOWNLOAD_KEY=xxxxxxxxxxxx
       - INSTANA_AGENT_ZONE=${agent_zone:-sdk-demo}
     expose:
       - 42699
